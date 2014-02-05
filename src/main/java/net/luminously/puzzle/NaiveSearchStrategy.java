@@ -51,6 +51,7 @@ public class NaiveSearchStrategy implements SearchStrategy {
             // Write solution to file
             try {
               out.write(newBoard.getMoves().append(time).toString());
+              out.flush();
             } catch (IOException e) {
               // Un-R/W-able file is a RuntimeException
               Throwables.propagate(e);
