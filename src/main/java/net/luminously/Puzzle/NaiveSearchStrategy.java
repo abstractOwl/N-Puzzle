@@ -49,7 +49,6 @@ public class NaiveSearchStrategy implements SearchStrategy {
           Board newBoard = top.move(d);
           if (newBoard.isComplete()) {
             int elapsed = (int)((System.currentTimeMillis() - startTime) / 1000);
-            System.out.println(elapsed);
             String time = "\n" + elapsed + " seconds\n";
             
             // Write solution to file
