@@ -9,3 +9,4 @@ local.properties
 .loadpath
 .classpath
 .project
+src/main/resources/out.txt

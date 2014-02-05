@@ -11,15 +11,16 @@ import com.google.common.base.Preconditions;
  * Class representing an n-sized board of a fifteen puzzle. Board stores the
  * following information: Board state, current position, moves taken.
  */
-public class Board {
+public class Board implements Comparable<Board> {
   public static enum Direction {
     NORTH, EAST, SOUTH, WEST
   };
   
-  private int[][] board;
-  private StringBuilder moves;
-  private Point empty;
-  private Direction lastPosition;
+  private final int[][] board;
+  private final int cost;
+  private final StringBuilder moves;
+  private final Point empty;
+  private final Direction lastPosition;
 
   /**
    * Creates an instance of the Board object. Can only be instantiated
@@ -40,6 +41,37 @@ public class Board {
     this.empty = position;
     this.lastPosition = lastPosition;
     this.moves = moves;
+    
+    // Cache for comparison: This value is read at least once per instance, therefore lazy load is not optimal
+    // Consider making this optional in the future if other algorithms do not use
+    cost = calculateHeuristic();
+  }
+  
+  /**
+   * Estimates the cost to finish along this path with the Manhattan Distance.
+   * @return Estimated Integer cost
+   */
+  private int calculateHeuristic() {
+    int size = board.length;
+    int estimate = 0;
+    
+    for (int y = 0; y < size; y++) {
+      for (int x = 0; x < size; x++) {
+        Point p = calculateHeuristicHelper(board[x][y]);
+        estimate += Math.abs(x - p.x) + Math.abs(y - p.y);
+      }
+    }
+    return moves.length() + estimate;
+  }
+  
+  /**
+   * Returns the expected coordinates of a given value
+   * @return Point object with the expected coordinates
+   */
+  private Point calculateHeuristicHelper(int n) {
+    int size = board.length;
+    if (n == -1) return new Point(size - 1, size - 1); // special case for X
+    return new Point(n % size, n / size);
   }
   
   /**
@@ -111,6 +143,12 @@ public class Board {
     default: throw new NullPointerException("d must not be null");
     }
   }
+
+  @Override
+  public int compareTo(Board other) {
+    // See Comparable#compareTo spec for more information
+    return cost - other.getCost();
+  }
   
   /**
    * Returns a copy of the current Board state.
@@ -125,6 +163,14 @@ public class Board {
 		  System.arraycopy(board[i], 0, tmp[i], 0, size);
 	  }
 	  return tmp;
+  }
+  
+  /**
+   * Returns the estimated cost from this state to the finish.
+   * @return estimated Integer cost
+   */
+  public int getCost() {
+    return cost;
   }
   
   /**
@@ -157,6 +203,7 @@ public class Board {
    */
   public boolean isComplete() {
     int size = board.length;
+    
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
         if (x == size - 1 && y == size - 1 && board[x][y] == -1) return true;

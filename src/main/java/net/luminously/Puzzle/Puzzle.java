@@ -39,7 +39,7 @@ public class Puzzle {
 		Preconditions.checkArgument(args.length == 2, "Usage: java Puzzle input.txt output.txt");
 
 		Board board = Board.parse(args[0]);
-		SearchStrategy searchStrategy = new NaiveSearchStrategy();
+		SearchStrategy searchStrategy = new AStarSearchStrategy();
 		BufferedWriter out = new BufferedWriter(new FileWriter(args[1]));
 		
 		// Terminate forcefully after 30 minutes, as per instructions

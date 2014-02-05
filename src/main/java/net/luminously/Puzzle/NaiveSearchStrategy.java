@@ -13,9 +13,6 @@ import net.luminously.Puzzle.Board.Direction;
  * Naive implementation of N-Puzzle search strategy. Uses breadth first
  * search to find solution.
  */
-/**
- * Naive implementation of N-Puzzle search strategy.
- */
 public class NaiveSearchStrategy implements SearchStrategy {
   private static final EnumSet<Direction> DIRECTIONS = EnumSet.allOf(Direction.class);
   private long startTime;
