@@ -1,5 +1,6 @@
 package net.luminously.Puzzle;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
 import java.util.Queue;
@@ -8,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import net.luminously.Puzzle.Board.Direction;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Queues;
 
 /**
@@ -15,23 +17,23 @@ import com.google.common.collect.Queues;
  */
 public class AStarSearchStrategy implements SearchStrategy {
   private static final EnumSet<Direction> DIRECTIONS = EnumSet.allOf(Direction.class);
-  private long startTime;
+  private static final int threads = Runtime.getRuntime().availableProcessors() * 2;
+
+  private final long startTime;
   private Queue<Board> open;
-  //private Set<Board> closed;
   
   public AStarSearchStrategy() {
     this.startTime = System.currentTimeMillis();
     open = Queues.newPriorityBlockingQueue();
-    //closed = Sets.newHashSet();
   }
   
   @Override
   public void search(Board board, Writer out) {
-    ExecutorService executor = Executors.newFixedThreadPool(6);
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
     
     open.add(board);
     while (true) {
-      evalBoard(executor);
+      evalBoard(out, executor);
     }
   }
   
@@ -39,7 +41,7 @@ public class AStarSearchStrategy implements SearchStrategy {
    * Checks the queue for new Boards. Delegates intensive work to worker threads.
    * @param executor
    */
-  private void evalBoard(ExecutorService executor) {
+  private void evalBoard(Writer out, ExecutorService executor) {
     if (open.isEmpty()) return;
     
     Board top = open.remove();
@@ -49,13 +51,12 @@ public class AStarSearchStrategy implements SearchStrategy {
       String time = "\n" + elapsed + " seconds\n";
       
       // Write solution to file
-      // try {
-      System.out.println(top.getMoves().append(time).toString());
-      // out.write(top.getMoves().append(time).toString());
-      // } catch (IOException e) {
-      // Un-R/W-able file is a RuntimeException
-      // Throwables.propagate(e);
-      // }
+      try {
+        out.write(top.getMoves().append(time).toString());
+      } catch (IOException e) {
+        // Un-R/W-able file is a RuntimeException
+        Throwables.propagate(e);
+      }
     }
     
     for (Direction d: DIRECTIONS) {
@@ -71,10 +72,10 @@ public class AStarSearchStrategy implements SearchStrategy {
     private Direction direction;
     private Queue<Board> blockingQueue;
     
-    public BoardSearchWorker(Board board, Direction d, Queue<Board> q) {
+    public BoardSearchWorker(Board board, Direction direction, Queue<Board> blockingQueue) {
       this.board = board;
-      this.direction = d;
-      this.blockingQueue = q;
+      this.direction = direction;
+      this.blockingQueue = blockingQueue;
     }
 
     @Override
