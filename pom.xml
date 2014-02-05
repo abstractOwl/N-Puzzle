@@ -4,6 +4,24 @@
   <artifactId>N-Puzzle</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>net.luminously.Puzzle.Puzzle</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
   <properties>
 
 		<!-- Generic properties -->
