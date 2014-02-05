@@ -1,4 +1,4 @@
-package net.luminously.Puzzle;
+package net.luminously.puzzle;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -7,7 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.luminously.Puzzle.Board.Direction;
+import net.luminously.puzzle.Board.Direction;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Queues;

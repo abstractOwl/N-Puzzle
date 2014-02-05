@@ -1,4 +1,4 @@
-package net.luminously.Puzzle;
+package net.luminously.puzzle;
 
 import java.io.Writer;
 

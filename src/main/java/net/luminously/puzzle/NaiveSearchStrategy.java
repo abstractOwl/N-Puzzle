@@ -1,4 +1,4 @@
-package net.luminously.Puzzle;
+package net.luminously.puzzle;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -8,7 +8,7 @@ import java.util.Queue;
 
 import com.google.common.base.Throwables;
 
-import net.luminously.Puzzle.Board.Direction;
+import net.luminously.puzzle.Board.Direction;
 /**
  * Naive implementation of N-Puzzle search strategy. Uses breadth first
  * search to find solution.

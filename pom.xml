@@ -11,7 +11,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>net.luminously.Puzzle.Puzzle</mainClass>
+              <mainClass>net.luminously.puzzle.Puzzle</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -30,19 +30,20 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Spring -->
+		<!--
 		<spring-framework.version>3.2.3.RELEASE</spring-framework.version>
-
-		<!-- Logging -->
-		<logback.version>1.0.13</logback.version>
-		<slf4j.version>1.7.5</slf4j.version>
+		-->
 
 		<!-- Test -->
+		<!--
 		<junit.version>4.11</junit.version>
+		-->
 
 	</properties>
 	
 	<dependencies>
 		<!-- Spring and Transactions -->
+		<!--
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -53,20 +54,7 @@
 			<artifactId>spring-tx</artifactId>
 			<version>${spring-framework.version}</version>
 		</dependency>
-
-		<!-- Logging with SLF4J & LogBack -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
-			<scope>runtime</scope>
-		</dependency>
+		-->
 		
 		<!--  Google Guava -->
 		<dependency>
@@ -77,6 +65,7 @@
 
 		
 		<!-- Test Artifacts -->
+		<!--
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
@@ -89,6 +78,7 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		-->
 
 	</dependencies>	
 </project>
