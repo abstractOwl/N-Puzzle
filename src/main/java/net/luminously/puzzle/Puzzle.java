@@ -3,7 +3,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -39,14 +41,19 @@ public class Puzzle {
 		Preconditions.checkArgument(args.length == 2, "Usage: java Puzzle input.txt output.txt");
 
 		Board board = Board.parse(args[0]);
-		SearchStrategy searchStrategy = new ParallelAStarSearchStrategy();
+		SearchStrategy searchStrategy = new AStarSearchStrategy();
 		BufferedWriter out = new BufferedWriter(new FileWriter(args[1]));
 		
 		// Terminate forcefully after 30 minutes, as per instructions
-		Executors.newSingleThreadExecutor().submit(terminator);
+		ExecutorService terminatorService = Executors.newSingleThreadExecutor();
+		Future<?> future = terminatorService.submit(terminator);
 		
+		// Run search
 		run(board, searchStrategy, out);
 		
+		// Shutdown gracefully
+		future.cancel(true);
+		terminatorService.shutdown();
 		out.close();
 	}
 

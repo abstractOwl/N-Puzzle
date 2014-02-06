@@ -1,64 +1,64 @@
 package net.luminously.puzzle;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
 import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.Set;
 
 import net.luminously.puzzle.Board.Direction;
 
-import com.google.common.base.Throwables;
+import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 /**
  * Naive implementation of N-Puzzle search strategy. Uses breadth first
  * search to find solution.
  */
-public class AStarSearchStrategy implements SearchStrategy {
+public class AStarSearchStrategy extends AbstractSearchStrategy {
   private static final EnumSet<Direction> DIRECTIONS = EnumSet.allOf(Direction.class);
-  private long startTime;
+  
+  private PriorityQueue<Board> open;
+  private Set<Board> closed;
   
   public AStarSearchStrategy() {
-    this.startTime = System.currentTimeMillis();
+    open = Queues.newPriorityQueue();
+    closed = Sets.newHashSet();
   }
 
   @Override
   public void search(Board board, Writer out) {
-    boolean finished = false;
-    Queue<Board> queue = new PriorityQueue<Board>();
-    queue.add(board);
+    open = Queues.newPriorityQueue();
+    open.add(board);
     
-    // If initially complete
-    if (board.isComplete()) {
-      try {
-        out.write("\n0 seconds\n");
-      } catch (IOException e) {
-        // Un-R/W-able file is a RuntimeException
-        Throwables.propagate(e);
+    while (!open.isEmpty()) {
+      Board top = open.remove();
+      
+      if (top.isComplete()) {
+        write(out, top.getMoves().toString());
+        return;
       }
-    }
-    
-    // Breadth-first Search
-    while (!finished) {
-      Board top = queue.remove();
+      
+      closed.add(top);
       
       for (Direction d: DIRECTIONS) {
-        if (d != top.getLastPosition() && top.canMove(d)) {
-          Board newBoard = top.move(d);
-          if (newBoard.isComplete()) {
-            int elapsed = (int)((System.currentTimeMillis() - startTime) / 1000);
-            String time = "\n" + elapsed + " seconds\n";
-            
-            // Write solution to file
-            try {
-              out.write(newBoard.getMoves().append(time).toString());
-              out.flush();
-            } catch (IOException e) {
-              // Un-R/W-able file is a RuntimeException
-              Throwables.propagate(e);
-            }
-          }
-          queue.add(newBoard);
+        Board successor;
+        if (d == top.getLastPosition()
+            || !top.canMove(d)
+            || closed.contains(successor = top.move(d))
+            ) continue;
+        
+        if (closed.contains(successor)) continue;
+        
+        if (open.contains(successor)) {
+          // Hack to remove longer path when 2 of same state in open
+          // Because two boards of the same configuration are "equal()",
+          // Board.compareTo will cause the longer path-ed Board to float
+          // above and get removed by remove()
+          open.add(successor);
+          open.remove(successor);
+        } else {
+          open.add(successor);
         }
+        
       }
     }
   }

@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.google.common.base.Preconditions;
 
@@ -17,8 +18,8 @@ public class Board implements Comparable<Board> {
   };
   
   private final int[][] board;
-  private final int cost;
-  private final StringBuilder moves;
+  private final int estimatedCost;
+  private Board prevBoard;
   private final Point empty;
   private final Direction lastPosition;
 
@@ -30,21 +31,21 @@ public class Board implements Comparable<Board> {
    *              the empty square.
    * @param position A Point object representing the position of the empty
    *                 square in the board.
+   * @param prevBoard Board which lead to this Board
    * @param lastPosition Direction of last position
    */
-  private Board(int[][] board, Point position, StringBuilder moves, Direction lastPosition) {
+  private Board(int[][] board, Point position, Board prevBoard, Direction lastPosition) {
     Preconditions.checkNotNull(board, "board must not be null");
     Preconditions.checkNotNull(position, "position must not be null");
-    Preconditions.checkNotNull(moves, "moves must not be null");
     
     this.board = board;
     this.empty = position;
     this.lastPosition = lastPosition;
-    this.moves = moves;
+    this.prevBoard = prevBoard;
     
     // Cache for comparison: This value is read at least once per instance, therefore lazy load is not optimal
     // Consider making this optional in the future if other algorithms do not use
-    cost = calculateHeuristic();
+    estimatedCost = calculateHeuristic();
   }
   
   /**
@@ -61,7 +62,7 @@ public class Board implements Comparable<Board> {
         estimate += Math.abs(x - p.x) + Math.abs(y - p.y);
       }
     }
-    return moves.length() + estimate;
+    return getPathCost() + estimate;
   }
   
   /**
@@ -143,11 +144,29 @@ public class Board implements Comparable<Board> {
     default: throw new NullPointerException("d must not be null");
     }
   }
+  
+  @Override
+  public int hashCode() {
+    return board.hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+    if (other == null) return false;
+    if (other == this) return true;
+    if (!(other instanceof Board)) return false;
+    
+    return Arrays.deepEquals(board, ((Board)other).board);
+  }
 
   @Override
   public int compareTo(Board other) {
     // See Comparable#compareTo spec for more information
-    return cost - other.getCost();
+    int cost = getTotalCost() - other.getTotalCost();
+    return ((cost == 0)
+        // If equal, make the longer path float up so we can remove 
+        ? other.getPathCost() - getPathCost()
+        : getTotalCost() - other.getTotalCost());
   }
   
   /**
@@ -169,8 +188,8 @@ public class Board implements Comparable<Board> {
    * Returns the estimated cost from this state to the finish.
    * @return estimated Integer cost
    */
-  public int getCost() {
-    return cost;
+  public int getEstimatedCost() {
+    return estimatedCost;
   }
   
   /**
@@ -182,11 +201,21 @@ public class Board implements Comparable<Board> {
   }
 
   /**
-   * Returns a copy of the list of previous moves.
-   * @return Copy of StringBuilder object
+   * Recursively build move path.
+   * @return String
    */
   public StringBuilder getMoves() {
-    return new StringBuilder(this.moves);
+    if (prevBoard == null) { return new StringBuilder(); } // Base case
+    return prevBoard.getMoves().append(directionToChar(oppositeDirection(getLastPosition())));
+  }
+  
+  /**
+   * Recursively calculates cost up to this point.
+   * @return Integer cost
+   */
+  public int getPathCost() {
+    if (prevBoard == null) return 0;
+    return prevBoard.getPathCost() + 1;
   }
   
   /**
@@ -195,6 +224,14 @@ public class Board implements Comparable<Board> {
    */
   public Point getPoint() {
 	  return new Point(empty);
+  }
+  
+  /**
+   * Returns the total cost of this path. Calculated by adding path cost and estimated cost.
+   * @return Integer cost
+   */
+  public int getTotalCost() {
+    return getPathCost() + getEstimatedCost();
   }
   
   /**
@@ -228,7 +265,15 @@ public class Board implements Comparable<Board> {
 	  newBoard[empty.x][empty.y] = newBoard[newEmpty.x][newEmpty.y];
 	  newBoard[newEmpty.x][newEmpty.y] = tmp;
 	  
-	  return new Board(newBoard, newEmpty, getMoves().append(directionToChar(d)), oppositeDirection(d));
+	  return new Board(newBoard, newEmpty, this, oppositeDirection(d));
+  }
+  
+  /**
+   * Returns a copy of this Board with a different preceding Board.
+   * @return Specified preceding Board
+   */
+  public void setPredecessor(Board preceding) {
+    prevBoard = preceding;
   }
   
   /**
@@ -297,6 +342,6 @@ public class Board implements Comparable<Board> {
     
     Preconditions.checkNotNull(empty, "Input must contain one empty square");
     
-    return new Board(newBoard, empty, new StringBuilder(), null);
+    return new Board(newBoard, empty, null, null);
   }
 }
